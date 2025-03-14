@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام تسجيل بيانات العملاء</title>
+    <!-- إضافة مكتبات PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #ECE5DD; /* خلفية الواتساب */
+            margin: 0;
+            padding: 20px;
+            color: #4A4A4A;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #F7F7F7; /* خلفية أفتح قليلاً */
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #128C7E; /* لون الواتساب الأخضر الداكن */
+            color: white;
+            padding: 15px;
+            border-radius: 15px 15px 0 0;
+            margin: -20px -20px 20px -20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            margin: 0;
+            font-size: 24px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 16px;
+            background-color: white;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+        .col {
+            flex: 1;
+            padding: 0 10px;
+            min-width: 250px;
+        }
+        .section-title {
+            background-color: #25D366; /* لون الواتساب الأخضر */
+            color: white;
+            padding: 12px 15px;
+            margin: 25px 0 15px 0;
+            border-radius: 15px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background-color: #25D366; /* لون الواتساب الأخضر */
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto 0;
+            width: 200px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #128C7E; /* لون الواتساب الأخضر الداكن */
+        }
+        .button-secondary {
+            background-color: #34B7F1; /* لون أزرق مثل أزرار الواتساب الثانوية */
+        }
+        .button-secondary:hover {
+            background-color: #0f9bd7;
+        }
+        .button-export {
+            background-color: #FF7043; /* لون برتقالي للتصدير */
+        }
+        .button-export:hover {
+            background-color: #E64A19;
+        }
+        .customer-data {
+            margin-top: 30px;
+            display: none;
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: right;
+        }
+        th {
+            background-color: #128C7E; /* لون الواتساب الأخضر الداكن */
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e6e6e6;
+        }
+        .buttons-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .buttons-container button {
+            margin: 10px 0;
+        }
+        .message-bubble {
+            background-color: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        @media (max-width: 768px) {
+            .col {
+                flex: 100%;
+            }
+            .buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .buttons-container button {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>نظام تسجيل بيانات العملاء</h1>
+        </div>
+        
+        <form id="customerForm">
+            <div class="message-bubble">
+                <div class="section-title">البيانات الأساسية للعميل</div>
+                
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="customerName">اسم العميل</label>
+                            <input type="text" id="customerName" name="customerName" required>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="customerID">رقم الهوية</label>
+                            <input type="text" id="customerID" name="customerID" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="phone">رقم الهاتف</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="email">البريد الإلكتروني</label>
+                            <input type="email" id="email" name="email">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">العنوان</label>
+                    <textarea id="address" name="address" rows="3" required></textarea>
+                </div>
+            </div>
+            
+            <div class="message-bubble">
+                <div class="section-title">بيانات الحد الائتماني</div>
+                
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="creditLimit">الحد الائتماني المطلوب</label>
+                            <input type="number" id="creditLimit" name="creditLimit" min="0" required oninput="calculateInstallment()">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="paymentPeriod">فترة السداد (بالأشهر)</label>
+                            <input type="number" id="paymentPeriod" name="paymentPeriod" min="1" required oninput="calculateInstallment()">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="interestRate">نسبة الفائدة السنوية (%)</label>
+                            <input type="number" id="interestRate" name="interestRate" value="37.5" step="0.1" min="0" max="100" required oninput="calculateInstallment()">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="installmentAmount">قيمة القسط الشهري</label>
+                            <input type="number" id="installmentAmount" name="installmentAmount" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="message-bubble">
+                <div class="section-title">الضامن الأول (إلزامي)</div>
+                
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="guarantor1Name">اسم الضامن الأول</label>
+                            <input type="text" id="guarantor1Name" name="guarantor1Name" required>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="guarantor1ID">رقم هوية الضامن الأول</label>
+                            <input type="text" id="guarantor1ID" name="guarantor1ID" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="guarantor1Phone">رقم هاتف الضامن الأول</label>
+                            <input type="tel" id="guarantor1Phone" name="guarantor1Phone" required>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="guarantor1Relation">صلة القرابة بالعميل</label>
+                            <input type="text" id="guarantor1Relation" name="guarantor1Relation" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="guarantor1Address">عنوان الضامن الأول</label>
+                    <textarea id="guarantor1Address" name="guarantor1Address" rows="2" required></textarea>
+                </div>
+            </div>
+            
+            <div class="message-bubble">
+                <div class="section-title">الضامن الثاني (اختياري)</div>
+                
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="guarantor2Name">اسم الضامن الثاني</label>
+                            <input type="text" id="guarantor2Name" name="guarantor2Name">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="guarantor2ID">رقم هوية الضامن الثاني</label>
+                            <input type="text" id="guarantor2ID" name="guarantor2ID">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="guarantor2Phone">رقم هاتف الضامن الثاني</label>
+                            <input type="tel" id="guarantor2Phone" name="guarantor2Phone">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="guarantor2Relation">صلة القرابة بالعميل</label>
+                            <input type="text" id="guarantor2Relation" name="guarantor2Relation">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="guarantor2Address">عنوان الضامن الثاني</label>
+                    <textarea id="guarantor2Address" name="guarantor2Address" rows="2"></textarea>
+                </div>
+            </div>
+            
+            <div class="message-bubble">
+                <div class="section-title">ملاحظات إضافية</div>
+                
+                <div class="form-group">
+                    <label for="notes">ملاحظات</label>
+                    <textarea id="notes" name="notes" rows="4"></textarea>
+                </div>
+            </div>
+            
+            <div class="buttons-container">
+                <button type="submit">تسجيل البيانات</button>
+                <button type="button" id="showDataBtn" class="button-secondary">عرض بيانات العملاء</button>
+                <button type="button" id="exportPdfBtn" class="button-export">تصدير إلى PDF</button>
+            </div>
+        </form>
+        
+        <div id="customerData" class="customer-data">
+            <div class="section-title">بيانات العملاء المسجلين</div>
+            <table id="customersTable">
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">البيان</th>
+                        <th>القيمة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- بيانات العملاء ستظهر هنا -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // مصفوفة لتخزين بيانات العملاء
+        let customers = [];
+        
+        // حساب قيمة القسط الشهري
+        function calculateInstallment() {
+            const creditLimit = parseFloat(document.getElementById('creditLimit').value) || 0;
+            const paymentPeriod = parseFloat(document.getElementById('paymentPeriod').value) || 1;
+            const interestRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            
+            // حساب الفائدة الشهرية
+            const monthlyInterestRate = interestRate / 100 / 12;
+            
+            // حساب قيمة القسط باستخدام صيغة القرض
+            let installment = 0;
+            if (monthlyInterestRate === 0) {
+                installment = creditLimit / paymentPeriod;
+            } else {
+                installment = creditLimit * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, paymentPeriod) / 
+                             (Math.pow(1 + monthlyInterestRate, paymentPeriod) - 1);
+            }
+            
+            // تحديث قيمة القسط في النموذج
+            document.getElementById('installmentAmount').value = installment.toFixed(2);
+        }
+        
+        // تحميل البيانات المحفوظة عند تحميل الصفحة
+        window.onload = function() {
+            // محاولة استرجاع البيانات من التخزين المحلي
+            const savedCustomers = localStorage.getItem('customers');
+            if (savedCustomers) {
+                customers = JSON.parse(savedCustomers);
+            }
+            
+            // حساب القسط الأولي
+            calculateInstallment();
+        };
+        
+        // معالجة تقديم النموذج
+        document.getElementById('customerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // جمع بيانات العميل من النموذج
+            const customer = {
+                name: document.getElementById('customerName').value,
+                id: document.getElementById('customerID').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                address: document.getElementById('address').value,
+                creditLimit: document.getElementById('creditLimit').value,
+                paymentPeriod: document.getElementById('paymentPeriod').value,
+                interestRate: document.getElementById('interestRate').value,
+                installmentAmount: document.getElementById('installmentAmount').value,
+                guarantor1: {
+                    name: document.getElementById('guarantor1Name').value,
+                    id: document.getElementById('guarantor1ID').value,
+                    phone: document.getElementById('guarantor1Phone').value,
+                    relation: document.getElementById('guarantor1Relation').value,
+                    address: document.getElementById('guarantor1Address').value
+                },
+                guarantor2: {
+                    name: document.getElementById('guarantor2Name').value,
+                    id: document.getElementById('guarantor2ID').value,
+                    phone: document.getElementById('guarantor2Phone').value,
+                    relation: document.getElementById('guarantor2Relation').value,
+                    address: document.getElementById('guarantor2Address').value
+                },
+                notes: document.getElementById('notes').value,
+                date: new Date().toLocaleDateString('ar-SA')
+            };
+            
+            // إضافة العميل إلى المصفوفة
+            customers.push(customer);
+            
+            // حفظ البيانات في التخزين المحلي
+            localStorage.setItem('customers', JSON.stringify(customers));
+            
+            // عرض رسالة نجاح
+            alert('تم تسجيل بيانات العميل بنجاح!');
+            
+            // إعادة تعيين النموذج
+            this.reset();
+            document.getElementById('interestRate').value = '37.5';
+            document.getElementById('installmentAmount').value = '';
+            
+            // تحديث جدول العملاء إذا كان مرئيًا
+            if (document.getElementById('customerData').style.display === 'block') {
+                displayCustomers();
+            }
+        });
+        
+        // عرض بيانات العملاء
+        document.getElementById('showDataBtn').addEventListener('click', function() {
+            const customerDataDiv = document.getElementById('customerData');
+            
+            if (customerDataDiv.style.display === 'block') {
+                customerDataDiv.style.display = 'none';
+                this.textContent = 'عرض بيانات العملاء';
+            } else {
+                customerDataDiv.style.display = 'block';
+                this.textContent = 'إخفاء بيانات العملاء';
+                displayCustomers();
+            }
+        });
+        
+        // عرض بيانات العملاء في الجدول
+        function displayCustomers() {
+            const tableBody = document.querySelector('#customersTable tbody');
+            tableBody.innerHTML = '';
+            
+            if (customers.length === 0) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 2;
+                cell.textContent = 'لا توجد بيانات عملاء مسجلة';
+                cell.style.textAlign = 'center';
+                row.appendChild(cell);
+                tableBody.appendChild(row);
+                return;
+            }
+            
+            customers.forEach((customer, index) => {
+                // إضافة عنوان للعميل
+                const headerRow = document.createElement('tr');
+                const headerCell = document.createElement('td');
+                headerCell.colSpan = 2;
+                headerCell.textContent = `العميل ${index + 1}: ${customer.name}`;
+                headerCell.style.backgroundColor = '#25D366';
+                headerCell.style.color = 'white';
+                headerCell.style.fontWeight = 'bold';
+                headerCell.style.textAlign = 'center';
+                headerRow.appendChild(headerCell);
+                tableBody.appendChild(headerRow);
+                
+                // إضافة بيانات العميل
+                addCustomerRow(tableBody, 'رقم الهوية', customer.id);
+                addCustomerRow(tableBody, 'رقم الهاتف', customer.phone);
+                addCustomerRow(tableBody, 'البريد الإلكتروني', customer.email || 'غير متوفر');
+                addCustomerRow(tableBody, 'العنوان', customer.address);
+                addCustomerRow(tableBody, 'الحد الائتماني', customer.creditLimit);
+                addCustomerRow(tableBody, 'فترة السداد', customer.paymentPeriod + ' شهر');
+                addCustomerRow(tableBody, 'قيمة القسط', customer.installmentAmount);
+                
+                // إضافة بيانات الضامن الأول
+                const guarantor1HeaderRow = document.createElement('tr');
+                const guarantor1HeaderCell = document.createElement('td');
+                guarantor1HeaderCell.colSpan = 2;
+                guarantor1HeaderCell.textContent = 'بيانات الضامن الأول';
+                guarantor1HeaderCell.style.backgroundColor = '#34B7F1';
+                guarantor1HeaderCell.style.color = 'white';
+                guarantor1HeaderCell.style.fontWeight = 'bold';
+                guarantor1HeaderCell.style.textAlign = 'center';
+                guarantor1HeaderRow.appendChild(guarantor1HeaderCell);
+                tableBody.appendChild(guarantor1HeaderRow);
+                
+                addCustomerRow(tableBody, 'اسم الضامن', customer.guarantor1.name);
+                addCustomerRow(tableBody, 'رقم هاتف الضامن', customer.guarantor1.phone);
+                addCustomerRow(tableBody, 'صلة القرابة', customer.guarantor1.relation);
+                
+                // إضافة بيانات الضامن الثاني إذا وجد
+                if (customer.guarantor2.name) {
+                    const guarantor2HeaderRow = document.createElement('tr');
+                    const guarantor2HeaderCell = document.createElement('td');
+                    guarantor2HeaderCell.colSpan = 2;
+                    guarantor2HeaderCell.textContent = 'بيانات الضامن الثاني';
+                    guarantor2HeaderCell.style.backgroundColor = '#34B7F1';
+                    guarantor2HeaderCell.style.color = 'white';
+                    guarantor2HeaderCell.style.fontWeight = 'bold';
+                    guarantor2HeaderCell.style.textAlign = 'center';
+                    guarantor2HeaderRow.appendChild(guarantor2HeaderCell);
+                    tableBody.appendChild(guarantor2HeaderRow);
+                    
+                    addCustomerRow(tableBody, 'اسم الضامن', customer.guarantor2.name);
+                    addCustomerRow(tableBody, 'رقم هاتف الضامن', customer.guarantor2.phone || 'غير متوفر');
+                    addCustomerRow(tableBody, 'صلة القرابة', customer.guarantor2.relation || 'غير متوفر');
+                }
+                
+                // إضافة صف فارغ بين العملاء
+                if (index < customers.length - 1) {
+                    const spacerRow = document.createElement('tr');
+                    const spacerCell = document.createElement('td');
+                    spacerCell.colSpan = 2;
+                    spacerCell.style.height = '20px';
+                    spacerCell.style.backgroundColor = '#f5f5f5';
+                    spacerRow.appendChild(spacerCell);
+                    tableBody.appendChild(spacerRow);
+                }
+            });
+        }
+
+        // دالة مساعدة لإضافة صف بيانات العميل
+        function addCustomerRow(tableBody, label, value) {
+            const row = document.createElement('tr');
+            
+            const labelCell = document.createElement('td');
+            labelCell.textContent = label;
+            labelCell.style.fontWeight = 'bold';
+            labelCell.style.backgroundColor = '#f9f9f9';
+            labelCell.style.width = '30%';
+            
+            const valueCell = document.createElement('td');
+            valueCell.textContent = value;
+            
+            row.appendChild(labelCell);
+            row.appendChild(valueCell);
+            tableBody.appendChild(row);
+        }
+        
+        // تصدير البيانات إلى PDF
+        document.getElementById('exportPdfBtn').addEventListener('click', function() {
+            if (customers.length === 0) {
+                alert('لا توجد بيانات عملاء لتصديرها!');
+                return;
+            }
+            
+            try {
+                // إنشاء ملف PDF
+                const { jsPDF } = window.jspdf;
+                
+                // إنشاء ملف PDF بالاتجاه الأفقي
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                // تعيين اتجاه النص من اليمين إلى اليسار
+                doc.setR2L(true);
+                
+                let yPos = 20;
+                const pageWidth = doc.internal.pageSize.getWidth();
+                const margin = 15;
+                const contentWidth = pageWidth - (margin * 2);
+                
+                // إضافة عنوان للملف
+                doc.setFontSize(18);
+                doc.text('تقرير بيانات العملاء', pageWidth / 2, yPos, { align: 'center' });
+                yPos += 10;
+                
+                // إضافة التاريخ
+                doc.setFontSize(12);
+                const today = new Date().toLocaleDateString('ar-SA');
+                doc.text('تاريخ التقرير: ' + today, pageWidth - margin, yPos, { align: 'right' });
+                yPos += 10;
+                
+                // إضافة بيانات كل عميل
+                customers.forEach((customer, index) => {
+                    // التحقق مما إذا كانت هناك حاجة لصفحة جديدة
+                    if (yPos > doc.internal.pageSize.getHeight() - 30) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    // إضافة عنوان العميل
+                    doc.setFillColor(37, 211, 102); // لون أخضر
+                    doc.rect(margin, yPos, contentWidth, 10, 'F');
+                    doc.setTextColor(255, 255, 255); // لون أبيض
+                    doc.setFontSize(14);
+                    doc.text(`العميل ${index + 1}: ${customer.name}`, pageWidth / 2, yPos + 7, { align: 'center' });
+                    yPos += 15;
+                    
+                    // إضافة بيانات العميل
+                    doc.setTextColor(0, 0, 0); // لون أسود
+                    doc.setFontSize(12);
+                    
+                    // دالة مساعدة لإضافة سطر بيانات
+                    function addTextLine(label, value) {
+                        doc.text(`${label}: ${value}`, margin, yPos);
+                        yPos += 8;
+                        
+                        // التحقق مما إذا كانت هناك حاجة لصفحة جديدة
+                        if (yPos > doc.internal.pageSize.getHeight() - 20) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                    }
+                    
+                    addTextLine('رقم الهوية', customer.id);
+                    addTextLine('رقم الهاتف', customer.phone);
+                    addTextLine('البريد الإلكتروني', customer.email || 'غير متوفر');
+                    addTextLine('العنوان', customer.address);
+                    addTextLine('الحد الائتماني', customer.creditLimit);
+                    addTextLine('فترة السداد', customer.paymentPeriod + ' شهر');
+                    addTextLine('قيمة القسط', customer.installmentAmount);
+                    
+                    // إضافة عنوان الضامن الأول
+                    doc.setFillColor(52, 183, 241); // لون أزرق
+                    doc.rect(margin, yPos, contentWidth, 8, 'F');
+                    doc.setTextColor(255, 255, 255); // لون أبيض
+                    doc.text('بيانات الضامن الأول', pageWidth / 2, yPos + 6, { align: 'center' });
+                    yPos += 12;
+                    
+                    // إضافة بيانات الضامن الأول
+                    doc.setTextColor(0, 0, 0); // لون أسود
+                    addTextLine('اسم الضامن', customer.guarantor1.name);
+                    addTextLine('رقم هاتف الضامن', customer.guarantor1.phone);
+                    addTextLine('صلة القرابة', customer.guarantor1.relation);
+                    
+                    // إضافة بيانات الضامن الثاني إذا وجد
+                    if (customer.guarantor2.name) {
+                        // إضافة عنوان الضامن الثاني
+                        doc.setFillColor(52, 183, 241); // لون أزرق
+                        doc.rect(margin, yPos, contentWidth, 8, 'F');
+                        doc.setTextColor(255, 255, 255); // لون أبيض
+                        doc.text('بيانات الضامن الثاني', pageWidth / 2, yPos + 6, { align: 'center' });
+                        yPos += 12;
+                        
+                        // إضافة بيانات الضامن الثاني
+                        doc.setTextColor(0, 0, 0); // لون أسود
+                        addTextLine('اسم الضامن', customer.guarantor2.name);
+                        addTextLine('رقم هاتف الضامن', customer.guarantor2.phone || 'غير متوفر');
+                        addTextLine('صلة القرابة', customer.guarantor2.relation || 'غير متوفر');
+                    }
+                    
+                    // إضافة ملاحظات إذا وجدت
+                    if (customer.notes) {
+                        addTextLine('ملاحظات', customer.notes);
+                    }
+                    
+                    // إضافة مسافة بين العملاء
+                    yPos += 10;
+                    
+                    // إضافة خط فاصل بين العملاء إذا لم يكن العميل الأخير
+                    if (index < customers.length - 1) {
+                        doc.setDrawColor(200, 200, 200);
+                        doc.line(margin, yPos - 5, pageWidth - margin, yPos - 5);
+                        yPos += 5;
+                    }
+                });
+                
+                // حفظ ملف PDF
+                doc.save('تقرير_بيانات_العملاء.pdf');
+            } catch (error) {
+                console.error('خطأ في إنشاء ملف PDF:', error);
+                alert('حدث خطأ أثناء إنشاء ملف PDF. يرجى المحاولة مرة أخرى.');
+            }
+        });
+    </script>
+</body>
+</html>
+
